@@ -52,9 +52,9 @@ Lets checkout a rate limited service in action
 
 ```scala
 //first attempt
-rateLimitedService("Sheldon") == Right(User("Jim Parsons"))
-rateLimitedService("Penny")   == Right(User("Kaley Cuoco"))
-rateLimitedService("Leonard") == Right(User("Johnny Galecki"))
+rateLimitedService("Sheldon") == Right(Artist("Jim Parsons"))
+rateLimitedService("Penny")   == Right(Artist("Kaley Cuoco"))
+rateLimitedService("Leonard") == Right(Artist("Johnny Galecki"))
 
 //fourth attempt will fail with a  RequestNotPermitted 
 rateLimitedService("Kripke") == Left(RequestNotPermitted)
