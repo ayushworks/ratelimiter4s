@@ -1,6 +1,6 @@
 # Rate limiter library designed for Scala.
 
-[![Build Status](https://travis-ci.com/ayushworks/pariksha.svg?branch=master)](https://travis-ci.com/ayushworks/pariksha)
+[![Build Status](https://travis-ci.com/ayushworks/ratelimiter4s.svg?branch=master)](https://travis-ci.com/ayushworks/ratelimiter4s)
 
 **ratelimter4s** is lightweight rate limiter library designed for Scala. It provides decorators to enhance 
 any `Function` with rate limiting capabilities. Is also provides support to decorate a `Function` with rate limiting capabilities and produce output where values are instances of  `cats-effect` and `zio` effect types.
