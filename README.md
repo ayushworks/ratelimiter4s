@@ -2,7 +2,10 @@
 
 [![Build Status](https://travis-ci.com/ayushworks/ratelimiter4s.svg?branch=master)](https://travis-ci.com/ayushworks/ratelimiter4s)
 
-**ratelimter4s** is lightweight rate limiter library designed for Scala. It provides wrappers to enhance any `Function` with rate limiting capabilities.
+**ratelimter4s** is lightweight rate limiter library designed for Scala. It provides wrappers to enhance any `Function` with rate limiting capabilities. The wrappers are available in 3 flavours
+* FRateLimiter : Rate limited method returns a `Either` type
+* CatsRateLimiter : Rate limited method returns a `EitherT` type
+* ZIORateLimiter : Rate limited method returns a `Task` type 
 
 ratelimiter4s uses [resilience4j rate limiter](https://resilience4j.readme.io/docs/ratelimiter) to create the
 underlying rate limiting policies. Resilience4j is a lightweight fault tolerance library inspired by [Netflix Hystrix](https://github.com/Netflix/Hystrix), but designed for Java 8.
