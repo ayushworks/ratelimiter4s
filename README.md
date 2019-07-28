@@ -11,7 +11,9 @@ ratelimiter4s uses [resilience4j rate limiter](https://resilience4j.readme.io/do
 underlying rate limiting policies. Resilience4j is a lightweight fault tolerance library inspired by [Netflix Hystrix](https://github.com/Netflix/Hystrix), but designed for Java 8.
 
 The heros of our story are `FRateLimiter`, `CatsRateLimiter` and `ZIORateLimiter` **classes**  which provide `limit` method to rate limit. 
-Any `Function` which returns a type `A` can be rate limited. The rate-limited method returns an `Either[RequestNotPermitted, A]` with the `Left` indicating failed request due to rate limiting and `Right` the presence of a successful response
+Any scala `Function` can be rate limited.  
+
+Lets check out `FRateLimiter` in action :
 
 
 Consider a public service which takes a character name and returns an `Artist`.
