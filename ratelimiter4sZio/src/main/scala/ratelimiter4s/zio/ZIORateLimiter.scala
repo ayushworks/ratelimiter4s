@@ -7,14 +7,11 @@ import io.github.resilience4j.ratelimiter.RateLimiter
  */
 object ZIORateLimiter {
 
-  implicit class Function0Decorator[A](function0: () => A) {
-    def decorate(implicit rateLimiter: RateLimiter): ZFunction0Limiter[A] =
+  def limit[A](function0: () => A, rateLimiter: RateLimiter): ZFunction0Limiter[A] =
       new ZFunction0Limiter[A](rateLimiter, function0)
-  }
 
-  implicit class Function1Decorator[A, T](function1: T => A) {
-    def decorate(implicit rateLimiter: RateLimiter): ZFunction1Limiter[A, T] =
-      new ZFunction1Limiter[A, T](rateLimiter, function1)
-  }
+
+  def limit[A,B](function1: B => A, rateLimiter: RateLimiter): ZFunction1Limiter[A, B] =
+      new ZFunction1Limiter[A, B](rateLimiter, function1)
 
 }

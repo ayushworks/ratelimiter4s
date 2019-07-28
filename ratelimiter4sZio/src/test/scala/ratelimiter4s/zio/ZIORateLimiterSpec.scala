@@ -15,16 +15,16 @@ class ZIORateLimiterSpec extends WordSpec with Matchers with EitherValues with C
 
   "Rate limiter" when {
 
-    "Function0 is decorated" should {
+    "Function0 is rate limitedd" should {
 
       def service: String = "value"
 
       "return RequestNotPermitted when rate limit is breached" in {
 
-        implicit val onePerMillisLimiter =
+        val onePerMillisLimiter =
           RateLimiter.of("onePerMillisLimiter", onePerMillis)
 
-        val rateLimitedService: ZFunction0Limiter[String] = (service _).decorate
+        val rateLimitedService: ZFunction0Limiter[String] = limit(service _, onePerMillisLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure
@@ -38,10 +38,10 @@ class ZIORateLimiterSpec extends WordSpec with Matchers with EitherValues with C
 
       "return value when rate limit is not breached" in {
 
-        implicit val twoPerMillisLimiter =
+        val twoPerMillisLimiter =
           RateLimiter.of("twoPerMillisLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerMillisLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure
@@ -57,32 +57,32 @@ class ZIORateLimiterSpec extends WordSpec with Matchers with EitherValues with C
 
         def service: String = throw new RuntimeException("error")
 
-        implicit val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
+        val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerSecondLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure
           result2 <- rateLimitedService.pure
         } yield result2
 
-        val exception = intercept[FiberFailure](runtime.unsafeRun(prog.either))
+        intercept[FiberFailure](runtime.unsafeRun(prog.either))
 
       }
 
     }
 
-    "Function1 is decorated" should {
+    "Function1 is rate limitedd" should {
 
       def service(name: String): String =
         s"hello $name"
 
       "return RequestNotPermitted when rate limit is breached" in {
 
-        implicit val onePerSecondLimiter =
+        val onePerSecondLimiter =
           RateLimiter.of("onePerSecondLimiter", onePerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, onePerSecondLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure("John")
@@ -96,10 +96,10 @@ class ZIORateLimiterSpec extends WordSpec with Matchers with EitherValues with C
 
       "return value when rate limit is not breached" in {
 
-        implicit val twoPerMillisLimiter =
+        val twoPerMillisLimiter =
           RateLimiter.of("twoPerMillisLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerMillisLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure("John")
@@ -116,16 +116,16 @@ class ZIORateLimiterSpec extends WordSpec with Matchers with EitherValues with C
 
         def service(name: String): String = throw new RuntimeException("error")
 
-        implicit val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
+        val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerSecondLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure("John")
           result2 <- rateLimitedService.pure("Bob")
         } yield result2
 
-        val exception = intercept[FiberFailure](runtime.unsafeRun(prog.either))
+        intercept[FiberFailure](runtime.unsafeRun(prog.either))
       }
 
     }

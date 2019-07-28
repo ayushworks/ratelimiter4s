@@ -12,15 +12,15 @@ class CatsRateLimiterSpec extends WordSpec with Matchers with EitherValues with 
 
   "Rate limiter" when {
 
-    "Function0 is decorated" should {
+    "Function0 is rate limitedd" should {
 
       def service: String = "value"
 
       "return RequestNotPermitted when rate limit is breached" in {
 
-        implicit val onePerSecondLimiter = RateLimiter.of("onePerSecondLimiter", onePerMillis)
+        val onePerSecondLimiter = RateLimiter.of("onePerSecondLimiter", onePerMillis)
 
-        val rateLimitedService: CatsFunction0Limiter[String] = (service _).decorate
+        val rateLimitedService: CatsFunction0Limiter[String] = limit(service _, onePerSecondLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure
@@ -34,9 +34,9 @@ class CatsRateLimiterSpec extends WordSpec with Matchers with EitherValues with 
 
       "return value when rate limit is not breached" in {
 
-        implicit val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
+        val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerSecondLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure
@@ -53,9 +53,9 @@ class CatsRateLimiterSpec extends WordSpec with Matchers with EitherValues with 
 
         def service: String = throw new RuntimeException("error")
 
-        implicit val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
+        val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerSecondLimiter)
 
         val exception = intercept[RuntimeException] {
           for {
@@ -69,16 +69,16 @@ class CatsRateLimiterSpec extends WordSpec with Matchers with EitherValues with 
 
     }
 
-    "Function1 is decorated" should {
+    "Function1 is rate limitedd" should {
 
       def service(name: String): String =
         s"hello $name"
 
       "return RequestNotPermitted when rate limit is breached" in {
 
-        implicit val onePerSecondLimiter = RateLimiter.of("onePerSecondLimiter", onePerMillis)
+        val onePerSecondLimiter = RateLimiter.of("onePerSecondLimiter", onePerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, onePerSecondLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure("John")
@@ -92,9 +92,9 @@ class CatsRateLimiterSpec extends WordSpec with Matchers with EitherValues with 
 
       "return value when rate limit is not breached" in {
 
-        implicit val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
+        val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerSecondLimiter)
 
         val prog = for {
           _       <- rateLimitedService.pure("John")
@@ -111,9 +111,9 @@ class CatsRateLimiterSpec extends WordSpec with Matchers with EitherValues with 
 
         def service(name: String): String = throw new RuntimeException("error")
 
-        implicit val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
+        val twoPerSecondLimiter = RateLimiter.of("twoPerSecondLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerSecondLimiter)
 
         val exception = intercept[RuntimeException] {
           for {

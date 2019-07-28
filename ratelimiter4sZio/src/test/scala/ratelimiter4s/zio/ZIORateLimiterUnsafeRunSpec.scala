@@ -15,7 +15,7 @@ class ZIORateLimiterUnsafeRunSpec extends WordSpec with Matchers with EitherValu
 
   "Rate limiter" when {
 
-    "Function1 is decorated" should {
+    "Function1 is rate limitedd" should {
 
       def service(name: String): String = {
         if (name.exists(_.isDigit)) {
@@ -26,10 +26,10 @@ class ZIORateLimiterUnsafeRunSpec extends WordSpec with Matchers with EitherValu
 
       "return RequestNotPermitted when rate limit is breached" in {
 
-        implicit val onePerSecondLimiter =
+        val onePerSecondLimiter =
           RateLimiter.of("onePerSecondLimiter", onePerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, onePerSecondLimiter)
 
         val prog = for {
           _       <- rateLimitedService("John")
@@ -43,10 +43,10 @@ class ZIORateLimiterUnsafeRunSpec extends WordSpec with Matchers with EitherValu
 
       "return value when rate limit is not breached" in {
 
-        implicit val twoPerMillisLimiter =
+        val twoPerMillisLimiter =
           RateLimiter.of("twoPerMillisLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerMillisLimiter)
 
         val prog = for {
           _       <- rateLimitedService("John")
@@ -61,10 +61,10 @@ class ZIORateLimiterUnsafeRunSpec extends WordSpec with Matchers with EitherValu
 
       "return exception when it is thrown" in {
 
-        implicit val twoPerMillisLimiter =
+        val twoPerMillisLimiter =
           RateLimiter.of("twoPerMillisLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerMillisLimiter)
 
         val prog = for {
           _       <- rateLimitedService("1")

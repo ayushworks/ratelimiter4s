@@ -1,6 +1,6 @@
 package ratelimiter4s.core
 
-import io.github.resilience4j.ratelimiter.{RateLimiter, RequestNotPermitted}
+import io.github.resilience4j.ratelimiter.{RateLimiter}
 import org.scalatest.{EitherValues, Matchers, WordSpec}
 import ratelimiter4s.Configs
 import ratelimiter4s.core.FRateLimiter._
@@ -12,15 +12,15 @@ class FRateLimiterSpec extends WordSpec with Matchers with EitherValues with Con
 
   "Rate limiter" when {
 
-    "Function0 is decorated" should {
+    "Function0 is rate limitedd" should {
 
       def service: String = "value"
 
       "return RequestNotPermitted when rate limit is breached" in {
 
-        implicit val onePerMilliSecondLimiter = RateLimiter.of("onePerMilliSecondLimiter", onePerMillis)
+        val onePerMilliSecondLimiter = RateLimiter.of("onePerMilliSecondLimiter", onePerMillis)
 
-        def rateLimitedService: () => Either[Throwable, String] = (service _).decorate
+        def rateLimitedService: () => Either[Throwable, String] = limit(service _, onePerMilliSecondLimiter)
 
         rateLimitedService.apply() shouldBe Right("value")
         rateLimitedService.apply().left.value.getMessage shouldBe "RateLimiter 'onePerMilliSecondLimiter' does not permit further calls"
@@ -28,9 +28,9 @@ class FRateLimiterSpec extends WordSpec with Matchers with EitherValues with Con
 
       "return value when rate limit is not breached" in {
 
-        implicit val twoPerMilliSecondLimiter = RateLimiter.of("twoPerMilliSecondLimiter", twoPerMillis)
+        val twoPerMilliSecondLimiter = RateLimiter.of("twoPerMilliSecondLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerMilliSecondLimiter)
 
         rateLimitedService.pure shouldBe Right("value")
         rateLimitedService.pure shouldBe Right("value")
@@ -41,9 +41,9 @@ class FRateLimiterSpec extends WordSpec with Matchers with EitherValues with Con
 
         def service: String = throw new RuntimeException("error")
 
-        implicit val onePerMilliSecondLimiter = RateLimiter.of("onePerMilliSecondLimiter", onePerMillis)
+        val onePerMilliSecondLimiter = RateLimiter.of("onePerMilliSecondLimiter", onePerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, onePerMilliSecondLimiter)
 
         val exception = intercept[RuntimeException] {
           rateLimitedService.pure
@@ -54,16 +54,16 @@ class FRateLimiterSpec extends WordSpec with Matchers with EitherValues with Con
 
     }
 
-    "Function1 is decorated" should {
+    "Function1 is rate limitedd" should {
 
       def service(name: String): String =
         s"Hello $name"
 
       "return RequestNotPermitted when rate limit is breached" in {
 
-        implicit val onePerMilliSecondLimiter = RateLimiter.of("onePerMilliSecondLimiter", onePerMillis)
+        val onePerMilliSecondLimiter = RateLimiter.of("onePerMilliSecondLimiter", onePerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, onePerMilliSecondLimiter)
 
         rateLimitedService.pure("John") shouldBe Right("Hello John")
         rateLimitedService.pure("Bob").left.value.getMessage shouldBe "RateLimiter 'onePerMilliSecondLimiter' does not permit further calls"
@@ -71,9 +71,9 @@ class FRateLimiterSpec extends WordSpec with Matchers with EitherValues with Con
 
       "return value when rate limit is not breached" in {
 
-        implicit val twoPerMilliSecondLimiter = RateLimiter.of("twoPerMilliSecondLimiter", twoPerMillis)
+        val twoPerMilliSecondLimiter = RateLimiter.of("twoPerMilliSecondLimiter", twoPerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, twoPerMilliSecondLimiter)
 
 
         rateLimitedService.pure("John") shouldBe Right("Hello John")
@@ -85,9 +85,9 @@ class FRateLimiterSpec extends WordSpec with Matchers with EitherValues with Con
 
         def service(name: String): String = throw new RuntimeException("error")
 
-        implicit val onePerMilliSecondLimiter = RateLimiter.of("onePerMilliSecondLimiter", onePerMillis)
+        val onePerMilliSecondLimiter = RateLimiter.of("onePerMilliSecondLimiter", onePerMillis)
 
-        val rateLimitedService = (service _).decorate
+        val rateLimitedService = limit(service _, onePerMilliSecondLimiter)
 
         val exception = intercept[RuntimeException] {
           rateLimitedService.pure("John")
